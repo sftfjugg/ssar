@@ -112,9 +112,9 @@
 ```bash
 $ git clone https://codeup.openanolis.cn/codeup/tracing_diagnosis/ssar.git
 $ ls ssar/package/
-ssar-1.0.1-1.an8.x86_64.rpm                 # 适用于 anolisos 和 centos8
-ssar-1.0.1-1.el7.x86_64.rpm                 # 适用于 centos7
-ssar_1.0-1_amd64.deb                        # 适用于 ubuntu
+ssar-1.0.1-2.an8.x86_64.rpm                 # 适用于 anolisos 和 centos8
+ssar-1.0.1-2.el7.x86_64.rpm                 # 适用于 centos7
+ssar_1.0.1-2_amd64.deb                      # 适用于 ubuntu
 ```
 
 <a name="rpm包打包方法"/>
@@ -133,7 +133,7 @@ $ cd ~/rpmbuild/
 $ cp SOURCES/spec/ssar.spec SPECS/
 $ rpmbuild -bb SPECS/ssar.spec 
 $ cd RPMS/x86_64/
-$ sudo rpm -ivh ssar-1.0.1-1.el7.centos.x86_64.rpm
+$ sudo rpm -ivh ssar-1.0.1-2.an8.x86_64.rpm
 $ sudo rpm -e ssar                                             # remove package
 ```
 
@@ -149,7 +149,7 @@ $ cd ~/
 $ git clone https://codeup.openanolis.cn/codeup/tracing_diagnosis/ssar.git
 $ cd ssar/debian
 $ ./build.sh
-$ dpkg -i ssar_1.0-1_amd64.deb
+$ dpkg -i ssar_1.0.1-2_amd64.deb
 $ dpkg -r ssar                                                 # remove package
 ```
 
