@@ -1188,6 +1188,7 @@ void InitFormat(SeqOptions &seq_option){
     list<int> it_columns = {};
     int it_line = 0;
     int it_column = 0;
+    bool indicator_ignore;
     string it_original_alias;
     string it_kv_str;
     string it_key_str;
@@ -1206,6 +1207,7 @@ void InitFormat(SeqOptions &seq_option){
         
         it_lines.clear();
         it_columns.clear();
+        indicator_ignore          = false;
         it_original_alias         = "";
         it_indicator_t.cfile      = "";
         it_indicator_t.line_begin = "";
@@ -1232,7 +1234,12 @@ void InitFormat(SeqOptions &seq_option){
                 }else if(it_key_str == "line"){
                     it_lines = ParseParam(it_value_str);
                 }else if(it_key_str == "column"){
-                    it_columns = ParseParam(it_value_str);
+                    if(it_value_str == "-1"){
+                        indicator_ignore = true;
+                        break;
+                    }else{ 
+                        it_columns = ParseParam(it_value_str);
+                    }
                 }else if(it_key_str == "gzip"){
                     if(it_value_str == "true"){
                         it_indicator_t.gzip = 1;
@@ -1338,6 +1345,9 @@ void InitFormat(SeqOptions &seq_option){
         }
         it_indicator_t.indicator = it_indicator;
 
+        if(indicator_ignore){
+            continue;
+        }
         if(it_indicator_t.cfile == ""){
             string exception_info = "field cfile is not set in indicator " + it_indicator;
             throw exception_info;
@@ -2993,6 +3003,10 @@ void ReportLiveSys(SeqOptions &seq_option){
     vector<string> sys_hierarchy_file;
     transform(seq_option.sys_hierarchy_line->begin(),  seq_option.sys_hierarchy_line->end(),  back_inserter(sys_hierarchy_file), [](pair<string, map<int,    map<int, string>>> i){return i.first;});
     transform(seq_option.sys_hierarchy_begin->begin(), seq_option.sys_hierarchy_begin->end(), back_inserter(sys_hierarchy_file), [](pair<string, map<string, map<int, string>>> i){return i.first;});
+    if(sys_hierarchy_file.empty()){
+        string exception_info = "indicator is empty.";
+        throw exception_info;
+    }
     RemoveDuplicateVectorElement(sys_hierarchy_file);
 
     unordered_map<string, shared_ptr<ifstream>> file_stream;
@@ -3614,6 +3628,10 @@ void ReportSys(SeqOptions &seq_option){
     vector<string> sys_hierarchy_file;
     transform(seq_option.sys_hierarchy_line->begin(),  seq_option.sys_hierarchy_line->end(),  back_inserter(sys_hierarchy_file), [](pair<string, map<int,    map<int, string>>> i){return i.first;});
     transform(seq_option.sys_hierarchy_begin->begin(), seq_option.sys_hierarchy_begin->end(), back_inserter(sys_hierarchy_file), [](pair<string, map<string, map<int, string>>> i){return i.first;});
+    if(sys_hierarchy_file.empty()){
+        string exception_info = "indicator is empty.";
+        throw exception_info;
+    }
     RemoveDuplicateVectorElement(sys_hierarchy_file);
 
     string it_cfile = "";

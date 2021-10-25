@@ -4,7 +4,7 @@
 %define debug_package %{nil}
 %define name          ssar
 %define version       1.0.1
-%define release       1
+%define release       2
 %define work_path     /var/log
 Name:                 %{name}
 Version:              %{version}

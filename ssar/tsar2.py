@@ -173,6 +173,23 @@ def compare_kver(kver1, kver2):
 
     return ret
 
+def get_line_file(line_begin, file_path):
+    ret = ""
+    for line in open(file_path):
+        if line.find(line_begin + " ", 0) == 0:
+            ret = line
+            break
+
+    return ret
+
+def get_index_word(word, string):
+    it_list = string.split()
+    ret = -2
+    if word in it_list:
+        ret = it_list.index(word)
+
+    return ret + 1
+
 def get_irq_names():
     ret = {}
     for line in open('/proc/interrupts'):
@@ -1115,23 +1132,35 @@ def concatenate_ssar():
             scmd += "metric=c|cfile=loadavg|line=1|column=3|dtype=float|alias=loadavg_load15;"
             scmd += "metric=c|cfile=loadavg|line=1|column=4|dtype=string|alias=loadavg_runq_plit;"
         elif it_view == "tcpofo":
-            column_OfoPruned    = 8
-            column_DSACKOfoSent = 57
-            column_DSACKOfoRecv = 59
-            column_OFOQueue     = 85
-            column_OFODrop      = 86
-            column_OFOMerge     = 87
-            if compare_kver(opts.kversion, "4.9") >= 0:
+            tcp_ext = get_line_file("TcpExt:", "/proc/net/netstat")
+
+            column_OfoPruned    = get_index_word("OfoPruned",       tcp_ext)
+            column_DSACKOfoSent = get_index_word("TCPDSACKOfoSent", tcp_ext)
+            column_DSACKOfoRecv = get_index_word("TCPDSACKOfoRecv", tcp_ext)
+            column_OFOQueue     = get_index_word("TCPOFOQueue",     tcp_ext)
+            column_OFODrop      = get_index_word("TCPOFODrop",      tcp_ext)
+            column_OFOMerge     = get_index_word("TCPOFOMerge",     tcp_ext)
+            
+            '''
+            3.10 and default:
+                column_OfoPruned    = 8
+                column_DSACKOfoSent = 57
+                column_DSACKOfoRecv = 59
+                column_OFOQueue     = 85
+                column_OFODrop      = 86
+                column_OFOMerge     = 87
+            4.9:
                 column_OFOQueue     = 86
                 column_OFODrop      = 87
                 column_OFOMerge     = 88
-            elif compare_kver(opts.kversion, "4.19") >= 0:
+            4.19:
                 column_DSACKOfoSent = 48
                 column_DSACKOfoRecv = 50
                 column_OFOQueue     = 79
                 column_OFODrop      = 80
                 column_OFOMerge     = 81
-
+            '''
+            
             scmd += "metric=d|cfile=netstat|line_begin=TcpExt:|column={column_num}|alias=netstat_OfoPruned;".format(column_num=column_OfoPruned)
             scmd += "metric=d|cfile=netstat|line_begin=TcpExt:|column={column_num}|alias=netstat_DSACKOfoSent;".format(column_num=column_DSACKOfoSent)
             scmd += "metric=d|cfile=netstat|line_begin=TcpExt:|column={column_num}|alias=netstat_DSACKOfoRecv;".format(column_num=column_DSACKOfoRecv)
@@ -1139,63 +1168,92 @@ def concatenate_ssar():
             scmd += "metric=d|cfile=netstat|line_begin=TcpExt:|column={column_num}|alias=netstat_OFODrop;".format(column_num=column_OFODrop)
             scmd += "metric=d|cfile=netstat|line_begin=TcpExt:|column={column_num}|alias=netstat_OFOMerge;".format(column_num=column_OFOMerge)
         elif it_view == "retran":
-            column_LostRetransmit   = 42
-            column_FastRetrans      = 46
-            column_ForwardRetrans   = 47
-            column_SlowStartRetrans = 48
-            column_TCPTimeouts      = 49
-            column_TCPLossProbes    = 50
-            column_RetransFail      = 83
-            column_SynRetrans       = 102
-            if compare_kver(opts.kversion, "4.9") >= 0:
-                column_RetransFail = 84
-                column_SynRetrans  = 103
-            elif compare_kver(opts.kversion, "4.19") >= 0:
+            tcp_ext = get_line_file("TcpExt:", "/proc/net/netstat")
+
+            column_LostRetransmit   = get_index_word("TCPLostRetransmit",   tcp_ext)
+            column_FastRetrans      = get_index_word("TCPFastRetrans",      tcp_ext)
+            column_ForwardRetrans   = get_index_word("TCPForwardRetrans",   tcp_ext)
+            column_SlowStartRetrans = get_index_word("TCPSlowStartRetrans", tcp_ext)
+            column_Timeouts         = get_index_word("TCPTimeouts",         tcp_ext)
+            column_LossProbes       = get_index_word("TCPLossProbes",       tcp_ext)
+            column_RetransFail      = get_index_word("TCPRetransFail",      tcp_ext)
+            column_SynRetrans       = get_index_word("TCPSynRetrans",       tcp_ext)
+
+            '''
+            3.10 and default:
+                column_LostRetransmit   = 42
+                column_FastRetrans      = 46
+                column_ForwardRetrans   = 47
+                column_SlowStartRetrans = 48
+                column_Timeouts         = 49
+                column_LossProbes       = 50
+                column_RetransFail      = 83
+                column_SynRetrans       = 102
+            4.9:
+                column_RetransFail      = 84
+                column_SynRetrans       = 103
+            4.19:
                 column_LostRetransmit   = 35
                 column_FastRetrans      = 39
-                column_ForwardRetrans   = 2               # ForwardRetrans is not exist in 4.19, replace with column2
+                column_ForwardRetrans   = -1               # ForwardRetrans is not exist in 4.19
                 column_SlowStartRetrans = 40
-                column_TCPTimeouts      = 41
-                column_TCPLossProbes    = 42
+                column_Timeouts         = 41
+                column_LossProbes       = 42
                 column_RetransFail      = 77
                 column_SynRetrans       = 97
+            '''
 
             scmd += "metric=d|cfile=snmp|line=8|column=13|alias=snmp_RetransSegs;"
             scmd += "metric=d|cfile=netstat|line_begin=TcpExt:|column={column_num}|alias=netstat_LostRetransmit;".format(column_num=column_LostRetransmit)
             scmd += "metric=d|cfile=netstat|line_begin=TcpExt:|column={column_num}|alias=netstat_FastRetrans;".format(column_num=column_FastRetrans)
             scmd += "metric=d|cfile=netstat|line_begin=TcpExt:|column={column_num}|alias=netstat_ForwardRetrans;".format(column_num=column_ForwardRetrans)
             scmd += "metric=d|cfile=netstat|line_begin=TcpExt:|column={column_num}|alias=netstat_SlowStartRetrans;".format(column_num=column_SlowStartRetrans)
-            scmd += "metric=d|cfile=netstat|line_begin=TcpExt:|column={column_num}|alias=netstat_RTORetrans;".format(column_num=column_TCPTimeouts)
-            scmd += "metric=d|cfile=netstat|line_begin=TcpExt:|column={column_num}|alias=netstat_LossProbes;".format(column_num=column_TCPLossProbes)
+            scmd += "metric=d|cfile=netstat|line_begin=TcpExt:|column={column_num}|alias=netstat_RTORetrans;".format(column_num=column_Timeouts)
+            scmd += "metric=d|cfile=netstat|line_begin=TcpExt:|column={column_num}|alias=netstat_LossProbes;".format(column_num=column_LossProbes)
             scmd += "metric=d|cfile=netstat|line_begin=TcpExt:|column={column_num}|alias=netstat_RetransFail;".format(column_num=column_RetransFail)
             scmd += "metric=d|cfile=netstat|line_begin=TcpExt:|column={column_num}|alias=netstat_SynRetrans;".format(column_num=column_SynRetrans)
         elif it_view == "tcpdrop":
-            column_LockDroppedIcmps = 10
-            column_ListenDrops      = 22
-            column_ListenOverflows  = 21
-            column_PrequeueDropped  = 26
-            column_BacklogDrop      = 76
-            column_MinTTLDrop       = 77
-            column_DeferAcceptDrop  = 78
-            column_ReqQFullDrop     = 82
-            column_OFODrop          = 86
-            if compare_kver(opts.kversion, "4.9") >= 0:
+            tcp_ext = get_line_file("TcpExt:", "/proc/net/netstat")
+
+            column_LockDroppedIcmps = get_index_word("LockDroppedIcmps",   tcp_ext)
+            column_ListenDrops      = get_index_word("ListenDrops",        tcp_ext) 
+            column_ListenOverflows  = get_index_word("ListenOverflows",    tcp_ext)
+            column_PrequeueDropped  = get_index_word("TCPPrequeueDropped", tcp_ext)
+            column_BacklogDrop      = get_index_word("TCPBacklogDrop",     tcp_ext)
+            column_MinTTLDrop       = get_index_word("TCPMinTTLDrop",      tcp_ext)
+            column_DeferAcceptDrop  = get_index_word("TCPDeferAcceptDrop", tcp_ext)
+            column_ReqQFullDrop     = get_index_word("TCPReqQFullDrop",    tcp_ext)
+            column_OFODrop          = get_index_word("TCPOFODrop",         tcp_ext)
+
+            '''
+            3.10 and default:
+                column_LockDroppedIcmps = 10
+                column_ListenDrops      = 22
+                column_ListenOverflows  = 21
+                column_PrequeueDropped  = 26
+                column_BacklogDrop      = 76
+                column_MinTTLDrop       = 77
+                column_DeferAcceptDrop  = 78
+                column_ReqQFullDrop     = 82
+                column_OFODrop          = 86
+            4.9:
                 column_BacklogDrop      = 77
                 column_MinTTLDrop       = 78
                 column_DeferAcceptDrop  = 79
                 column_ReqQFullDrop     = 83
                 column_OFODrop          = 87
-            elif compare_kver(opts.kversion, "4.19") >= 0:
+            4.19:
                 column_BacklogDrop      = 77
                 column_ListenDrops      = 21
                 column_ListenOverflows  = 20
-                column_PrequeueDropped  = 2               # PrequeueDropped is not exist in 4.19, replace with column2
+                column_PrequeueDropped  = -1               # PrequeueDropped is not exist in 4.19
                 column_BacklogDrop      = 69
                 column_MinTTLDrop       = 71
                 column_DeferAcceptDrop  = 72
                 column_ReqQFullDrop     = 76
                 column_OFODrop          = 80
-
+            '''
+ 
             scmd += "metric=d|cfile=netstat|line_begin=TcpExt:|column={column_num}|alias=netstat_LockDroppedIcmps;".format(column_num=column_LockDroppedIcmps)
             scmd += "metric=d|cfile=netstat|line_begin=TcpExt:|column={column_num}|alias=netstat_ListenDrops;".format(column_num=column_ListenDrops)
             scmd += "metric=d|cfile=netstat|line_begin=TcpExt:|column={column_num}|alias=netstat_ListenOverflows;".format(column_num=column_ListenOverflows)
@@ -1206,17 +1264,29 @@ def concatenate_ssar():
             scmd += "metric=d|cfile=netstat|line_begin=TcpExt:|column={column_num}|alias=netstat_ReqQFullDrop;".format(column_num=column_ReqQFullDrop)
             scmd += "metric=d|cfile=netstat|line_begin=TcpExt:|column={column_num}|alias=netstat_OFODrop;".format(column_num=column_OFODrop)
         elif it_view == "tcperr":
-            column_RenoFailures               = 43
-            column_SackFailures               = 44
-            column_LossFailures               = 45
-            column_AbortOnMemory              = 62
-            column_AbortFailed                = 65
-            column_TimeWaitOverflow           = 80
-            column_FastOpenListenOverflow     = 94
-            if compare_kver(opts.kversion, "4.9") >= 0:
+            tcp_ext = get_line_file("TcpExt:", "/proc/net/netstat")
+
+            column_RenoFailures           = get_index_word("TCPRenoFailures",           tcp_ext)
+            column_SackFailures           = get_index_word("TCPSackFailures",           tcp_ext)
+            column_LossFailures           = get_index_word("TCPLossFailures",           tcp_ext)
+            column_AbortOnMemory          = get_index_word("TCPAbortOnMemory",          tcp_ext)
+            column_AbortFailed            = get_index_word("TCPAbortFailed",            tcp_ext)
+            column_TimeWaitOverflow       = get_index_word("TCPTimeWaitOverflow",       tcp_ext)
+            column_FastOpenListenOverflow = get_index_word("TCPFastOpenListenOverflow", tcp_ext)
+
+            '''
+            3.10 and default:
+                column_RenoFailures           = 43
+                column_SackFailures           = 44
+                column_LossFailures           = 45
+                column_AbortOnMemory          = 62
+                column_AbortFailed            = 65
+                column_TimeWaitOverflow       = 80
+                column_FastOpenListenOverflow = 94
+            4.9:
                 column_TimeWaitOverflow       = 81
                 column_FastOpenListenOverflow = 95
-            elif compare_kver(opts.kversion, "4.19") >= 0:
+            4.19:
                 column_RenoFailures           = 36
                 column_SackFailures           = 37
                 column_LossFailures           = 38
@@ -1224,6 +1294,7 @@ def concatenate_ssar():
                 column_AbortFailed            = 56
                 column_TimeWaitOverflow       = 74
                 column_FastOpenListenOverflow = 88
+            '''
 
             scmd += "metric=d|cfile=netstat|line_begin=TcpExt:|column={column_num}|alias=netstat_RenoFailures;".format(column_num=column_RenoFailures)
             scmd += "metric=d|cfile=netstat|line_begin=TcpExt:|column={column_num}|alias=netstat_SackFailures;".format(column_num=column_SackFailures)
@@ -1658,15 +1729,16 @@ def display_lines(it_line, i, agregates = {}):
         snmp_RetransSegs         = float(it_line['snmp_RetransSegs'])
         netstat_LostRetransmit   = float(it_line['netstat_LostRetransmit'])
         netstat_FastRetrans      = float(it_line['netstat_FastRetrans'])
-        netstat_ForwardRetrans   = float(it_line['netstat_ForwardRetrans'])
+        if "netstat_ForwardRetrans" in it_line:
+            netstat_ForwardRetrans = float(it_line['netstat_ForwardRetrans'])
+        else:
+            netstat_ForwardRetrans = 0;                                             # ForwardRetrans is not exist in 4.19, replace with 0         
         netstat_SlowStartRetrans = float(it_line['netstat_SlowStartRetrans'])
         netstat_RTORetrans       = float(it_line['netstat_RTORetrans'])
         netstat_LossProbes       = float(it_line['netstat_LossProbes'])
         netstat_RetransFail      = float(it_line['netstat_RetransFail'])
         netstat_SynRetrans       = float(it_line['netstat_SynRetrans'])
         retran_RTORatio          = float(100 * netstat_RTORetrans / snmp_RetransSegs) if snmp_RetransSegs else 0.0
-        if compare_kver(opts.kversion, "4.19") >= 0:
-            netstat_ForwardRetrans = 0;        # ForwardRetrans is not exist in 4.19, replace with 0         
 
         if not opts.live:
             agregates['total_retran_RetransSegs'].append(snmp_RetransSegs)
@@ -1695,14 +1767,15 @@ def display_lines(it_line, i, agregates = {}):
         netstat_LockDroppedIcmps = float(it_line['netstat_LockDroppedIcmps'])
         netstat_ListenDrops      = float(it_line['netstat_ListenDrops'])
         netstat_ListenOverflows  = float(it_line['netstat_ListenOverflows'])
-        netstat_PrequeueDropped  = float(it_line['netstat_PrequeueDropped'])
+        if "netstat_PrequeueDropped" in it_line:
+            netstat_PrequeueDropped  = float(it_line['netstat_PrequeueDropped'])
+        else:
+            netstat_PrequeueDropped = 0;                                           # PrequeueDropped is not exist in 4.19, replace with 0         
         netstat_BacklogDrop      = float(it_line['netstat_BacklogDrop'])
         netstat_MinTTLDrop       = float(it_line['netstat_MinTTLDrop'])
         netstat_DeferAcceptDrop  = float(it_line['netstat_DeferAcceptDrop'])
         netstat_ReqQFullDrop     = float(it_line['netstat_ReqQFullDrop'])
         netstat_OFODrop          = float(it_line['netstat_OFODrop'])
-        if compare_kver(opts.kversion, "4.19") >= 0:
-            netstat_PrequeueDropped = 0;        # PrequeueDropped is not exist in 4.19, replace with 0         
 
         if not opts.live:
             agregates['total_tcpdrop_LockDroppedIcmps'].append(netstat_LockDroppedIcmps)
