@@ -42,9 +42,9 @@ To use, there are several methods:
 The project provides several packages for direct use.
 
 ```bash
-$ git clone https://codeup.openanolis.cn/codeup/tracing_diagnosis/ssar.git
+$ git clone https://gitee.com/anolis/tracing-ssar.git
 $ ls ssar/package/
-ssar-1.0.1-2.an8.x86_64.rpm ssar-1.0.1-2.el7.x86_64.rpm ssar_1.0.1-2_amd64.deb
+ssar-1.0.2-1.an8.x86_64.rpm ssar-1.0.2-1.el7.x86_64.rpm ssar_1.0.2-1_amd64.deb
 ```
 
 ### AnolisOS CentOS
@@ -56,13 +56,13 @@ $ yum install zlib-devel gcc-c++
 $ yum install rpm-build rpmdevtools git
 $ rpmdev-setuptree
 $ cd ~/
-$ git clone https://codeup.openanolis.cn/codeup/tracing_diagnosis/ssar.git
+$ git clone https://gitee.com/anolis/tracing-ssar.git
 $ cp -fr ~/ssar/* ~/rpmbuild/SOURCES/
 $ cd ~/rpmbuild/
 $ cp SOURCES/spec/ssar.spec SPECS/
 $ rpmbuild -bb SPECS/ssar.spec 
 $ cd RPMS/x86_64/
-$ sudo rpm -ivh ssar-1.0.1-2.an8.x86_64.rpm
+$ sudo rpm -ivh ssar-1.0.2-1.an8.x86_64.rpm
 $ sudo rpm -e ssar                                             # remove package
 ```
 
@@ -74,10 +74,10 @@ Method under Ubuntu.
 $ apt-get update
 $ apt install zlib1g-dev git
 $ cd ~/
-$ git clone https://codeup.openanolis.cn/codeup/tracing_diagnosis/ssar.git
+$ git clone https://gitee.com/anolis/tracing-ssar.git
 $ cd ssar/debian
 $ ./build.sh
-$ dpkg -i ssar_1.0.1-2_amd64.deb
+$ dpkg -i ssar_1.0.2-1_amd64.deb
 $ dpkg -r ssar                                                 # remove package
 ```
 
@@ -88,7 +88,7 @@ Source code installation method (not recommended).
 ```bash
 $ yum install zlib-devel                                       # ubuntu need zlib1g-dev
 $ cd ~/
-$ git clone https://codeup.openanolis.cn/codeup/tracing_diagnosis/ssar.git
+$ git clone https://gitee.com/anolis/tracing-ssar.git
 $ make 
 $ sudo make install
 $ sudo make uninstall                                          # remove                                   
@@ -171,5 +171,15 @@ DingDing group number 33304007
 ## Contributor
 
 This project was created by Wen Maoquan (English Name Miles Wen) who working for Alibaba Cloud-Computing Platform. Special thanks to all the [contributors](./CONTRIBUTOR).
+
+Ccheng   <ccheng@linux.alibaba.com>
+
+Dust.Li  <dust.li@linux.alibaba.com>
+
+MilesWen <mileswen@linux.alibaba.com>
+
+TonyLu   <tonylu@linux.alibaba.com>
+
+Xlpang   <xlpang@linux.alibaba.com>
 
 [tomlc99]: https://github.com/cktan/tomlc99.git

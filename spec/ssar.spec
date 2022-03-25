@@ -3,15 +3,15 @@
 %define _enable_debug_packages %{nil}
 %define debug_package %{nil}
 %define name          ssar
-%define version       1.0.1
-%define release       2
+%define version       1.0.2
+%define release       1
 %define work_path     /var/log
 Name:                 %{name}
 Version:              %{version}
 Release:              %{release}%{?dist}
 Summary:              ssar for SRE
 Group:                System Environment/Base
-License:              GNU
+License:              Mulan PSL v2
 ExclusiveArch:        x86_64
 %description
 log the system details 

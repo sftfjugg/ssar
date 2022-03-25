@@ -31,7 +31,10 @@ signal(SIGPIPE,SIG_DFL)
     Part of SRESAR (Site Reliability Engineering System Activity Reporter)
 
     Author:  Miles Wen <mileswen@linux.alibaba.com>
+             TonyLu    <tonylu@linux.alibaba.com>
              Dust.Li   <dust.li@linux.alibaba.com>
+             Xlpang    <xlpang@linux.alibaba.com>
+             Ccheng    <ccheng@linux.alibaba.com>
 
     Tsar2 program is compatible with tsar
 
@@ -324,6 +327,8 @@ def init_options():
         opts.finish = False
     if "ndays" not in opts:
         opts.ndays = False
+    if "path" not in opts:
+        opts.path = False
     if "spec" not in opts:
         opts.spec = False
     if "item" not in opts:
@@ -356,7 +361,7 @@ def init_options():
 
     # init interval
     if not opts.interval:
-        opts.interval = 5
+        opts.interval = 1
     if opts.live:
         opts.interval_tsar2 = str(opts.interval) + "s"
     else:
@@ -690,6 +695,8 @@ def concatenate_cputop():
         scmd += " -b " + opts.begin
     if opts.interval_tsar2:
         scmd += " -i " + opts.interval_tsar2
+    if opts.path:
+        scmd += " --path=" + opts.path
 
     return scmd
 
@@ -862,6 +869,8 @@ def concatenate_irqtop_interrupts():
         scmd += " -b " + opts.begin
     if opts.interval_tsar2:
         scmd += " -i " + opts.interval_tsar2
+    if opts.path:
+        scmd += " --path=" + opts.path
 
     return scmd
 
@@ -893,6 +902,8 @@ def concatenate_irqtop_intr():
         scmd += " -b " + opts.begin
     if opts.interval_tsar2:
         scmd += " -i " + opts.interval_tsar2
+    if opts.path:
+        scmd += " --path=" + opts.path
 
     return scmd
 
@@ -1313,6 +1324,8 @@ def concatenate_ssar():
         scmd += " -b " + opts.begin
     if opts.interval_tsar2:
         scmd += " -i " + opts.interval_tsar2
+    if opts.path:
+        scmd += " --path=" + opts.path
 
     return scmd
 
@@ -2028,6 +2041,7 @@ Examples:
     groupo.add_argument('-i','--interval',dest='interval' ,type=int, metavar='N',       help='specify intervals numbers, in minutes if with --live, it is in seconds')
     groupo.add_argument('-s','--spec'    ,dest='spec'     ,type=str,                    help='show spec field data, %(prog)s --cpu -s sys,util')
     groupo.add_argument('-f','--finish'  ,dest='finish'   ,type=str,                    help='finish datetime, %(prog)s -f 19/09/21-10:25')
+    groupo.add_argument(     '--path'    ,dest='path'     ,type=str,                    help='specify a dir path as input')
  
     group1 = groupo.add_mutually_exclusive_group()
     group1.add_argument('-w','--watch'   ,dest='watch'    ,type=int, metavar='N',       help='display last records in N mimutes. %(prog)s --watch 30 --cpu')
@@ -2064,6 +2078,7 @@ Examples:
     irqtop_parser.add_argument('--ndays',   '-n',dest='ndays'    ,type=int, metavar='N',       help='show the value for the past days')
     irqtop_parser.add_argument('--date',    '-d',dest='date'     ,type=str, metavar='YYYYmmdd',help='show the value for the specify day')
     irqtop_parser.add_argument('--live',    '-l',dest='live'     ,action='store_true',         help='running print live mode, which module will print')
+    irqtop_parser.add_argument('--path',         dest='path'     ,type=str,                    help='specify a dir path as input')
     irqtop_parser.add_argument('--detail',  '-D',dest='detail'   ,action='store_true',         help='do not conver data to K/M/G')
     irqtop_parser.add_argument('--interval','-i',dest='interval' ,type=int, metavar='N',       help='specify intervals numbers, in minutes if with --live, it is in seconds')
     irqtop_parser.add_argument('--spec',    '-s',dest='spec'     ,type=str,                    help='show spec field data. %(prog)s -s count,irq')
@@ -2081,6 +2096,7 @@ Examples:
     cputop_parser.add_argument('--ndays',   '-n',dest='ndays'    ,type=int, metavar='N',       help='show the value for the past days')
     cputop_parser.add_argument('--date',    '-d',dest='date'     ,type=str, metavar='YYYYmmdd',help='show the value for the specify day')
     cputop_parser.add_argument('--live',    '-l',dest='live'     ,action='store_true',         help='running print live mode, which module will print')
+    cputop_parser.add_argument('--path',         dest='path'     ,type=str,                    help='specify a dir path as input')
     cputop_parser.add_argument('--detail',  '-D',dest='detail'   ,action='store_true',         help='do not conver data to K/M/G')
     cputop_parser.add_argument('--interval','-i',dest='interval' ,type=int, metavar='N',       help='specify intervals numbers, in minutes if with --live, it is in seconds')
     cputop_parser.add_argument('--spec',    '-s',dest='spec'     ,type=str,                    help='show spec field data. %(prog)s -s value,cpu')

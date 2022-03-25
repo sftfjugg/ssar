@@ -10,6 +10,7 @@ StartLimitBurst=6000
 ExecStart=/usr/local/bin/sresar -D
 StandardOutput=journal
 StandardError=journal
+MemoryLimit=200M
 
 [Install]
 WantedBy=multi-user.target

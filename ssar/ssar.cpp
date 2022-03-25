@@ -13,7 +13,8 @@
  *  Part of SRESAR (Site Reliability Engineering System Activity Reporter)
  *  
  *  Author:  Miles Wen <mileswen@linux.alibaba.com>
- * 
+ *           Xlpang   <xlpang@linux.alibaba.com>
+ *
  * 
  */
 
@@ -51,9 +52,9 @@ using namespace cpptoml;
 using namespace std;
 using json = nlohmann::json;
 
-#define VERSION "1.0.1"
+#define VERSION "1.0.2"
 #define AREA_LINE 20
-const string sresar_suffix = "sresar24";
+const string sresar_suffix = "sresar25";
 const string cmdline_suffix = "cmdline";
 
 #define SSTREAM_IGNORE(ss,n) for(int ss_i = 0;ss_i < (n); ss_i++){  \
@@ -581,7 +582,7 @@ int SreProc::GetDataFile(){
         set<string>::const_iterator i_element = this->files.cbegin();
         for(;i_element != this->files.cend(); ++i_element){
             sub_file = (*i_element);
-            if((sub_file.size() == this->suffix.size() + 15) && 0 == sub_file.find(it_minute, 0) && 14 ==sub_file.rfind("_"+this->suffix,14)){
+            if((sub_file.size() == this->suffix.size() + 15) && 0 == sub_file.find(it_minute, 0) && 14 == sub_file.rfind("_" + this->suffix, 14)){
                 it_file = sub_file;
                 break;
             }
@@ -609,7 +610,7 @@ int SreProc::GetDataFile(){
 
 int SreProc::_MakeDataHourPath(const chrono::system_clock::time_point &it_time_point){
     this->time_point = it_time_point;
-   
+
     if(0 > this->GetDataDir()){
         return 2;
     }
@@ -908,7 +909,7 @@ void InitOptions(SeqOptions &seq_option){
         }
     }else{
         if("sys" == seq_option.src && seq_option.live_mode){
-            seq_option.intervals = 5;
+            seq_option.intervals = 1;
         }
     }
     if(("proc" == seq_option.src || "sys" == seq_option.src) && seq_option.intervals <= 0){
@@ -1589,7 +1590,7 @@ int ReadProcFileData(SeqOptions &seq_option, string &it_path, string &addon_path
     string file_contents;
     while(it_file.good()){
         sproc_t item_sproc_t;
-        // start_time, tgid, ppid, pgid, sid, tpgid, nlwp, s, etimes, flags, sched, nice, rtprio, prio, nvcsw, nivcsw utime, stime, size, rss, shr, maj_flt, min_flt, cmd, cmdline
+        // start_time, tgid, ppid, pgid, sid, tpgid, nlwp, psr, s, etimes, flags, sched, nice, rtprio, prio, nvcsw, nivcsw utime, stime, size, rss, shr, maj_flt, min_flt, cmd, cmdline
         getline(it_file, file_contents);
         if(file_contents.empty() || finded){
             break;
@@ -1609,6 +1610,7 @@ int ReadProcFileData(SeqOptions &seq_option, string &it_path, string &addon_path
         ifile_contents >> item_sproc_t.sid;
         ifile_contents >> item_sproc_t.tpgid;
         ifile_contents >> item_sproc_t.nlwp;
+        ifile_contents >> item_sproc_t.psr;
         ifile_contents >> item_sproc_t.s;
         ifile_contents >> item_sproc_t.etimes;
         ifile_contents >> item_sproc_t.flags;
@@ -4186,6 +4188,7 @@ int main(int argc, char *argv[]){
     CLI::Option* cli_sys_purify_option    = cli_global.add_flag("--purify,-P", opts.purify, "Hide the - * < > = no number data info.");
     CLI::Option* cli_sys_format_option    = cli_global.add_option("--format,-o", opts.format, "User-defined format. syntax is field1,field2");
     CLI::Option* cli_sys_extra_option     = cli_global.add_option("--extra,-O", opts.extra, "User-defined extra format. syntax is field1,field2")->excludes(cli_sys_format_option);
+    CLI::Option* cli_sys_path_option      = cli_global.add_flag("--path", opts.work_path, "specify a dir path as input");
     for(auto it_view_pair : (*opts.sys_view)){
         cli_global.add_flag("--"+it_view_pair.first,opts.views[it_view_pair.first],"Display user define format "+it_view_pair.first)->excludes(cli_sys_format_option);
     }
@@ -4195,7 +4198,7 @@ int main(int argc, char *argv[]){
     auto cli_procs = cli_global.add_subcommand("procs", "all process subcommand.");
     CLI::Option* cli_global_api_option = cli_procs->add_flag("--api", opts.api, "If selected, output is json format, otherwise shell format.");
     cli_procs->add_option("--finish,-f", opts.finish,"Assign the output datetime, allow history datetime. default value is current datetime.");
-    CLI::Option* cli_global_range_option = cli_procs->add_option("--range,-r", opts.range, "Range from begin to finish, default 5 minutes.");
+    CLI::Option* cli_global_range_option = cli_procs->add_option("--range,-r", opts.range, "Range from begin to finish, default 1 minutes.");
     cli_procs->add_option("--begin,-b", opts.begin, "Assign the compare datetime by the finish")->excludes(cli_global_range_option);
     cli_procs->add_option("--key,--sort,-k", opts.key, "Specify sorting order. Sorting syntax is [+|-]key[,[+|-]key[,...]]");
     cli_procs->add_option("--lines,-l", opts.lines, "Limit the output.");
@@ -4206,6 +4209,7 @@ int main(int argc, char *argv[]){
     cli_procs->add_flag("--mem", opts.mem, "Display virtual memory format.")->excludes(cli_global_format_option);
     cli_procs->add_flag("--job", opts.job, "Display job control format")->excludes(cli_global_format_option);
     cli_procs->add_flag("--sched", opts.sched, "Display sched format")->excludes(cli_global_format_option);
+    cli_procs->add_flag("--path", opts.work_path, "specify a dir path as input");
     cli_procs->footer(ssar_cli::PROCS_OPTIONS_HELP);
     cli_procs->callback([&](){ 
         if(!cli_procs->get_subcommands().size()){
@@ -4228,6 +4232,7 @@ int main(int argc, char *argv[]){
     cli_proc->add_option("--extra,-O", opts.extra, "User-defined extra format. syntax is field1,field2")->excludes(cli_proc_format_option);
     cli_proc->add_flag("--cpu", opts.cpu, "Display cpu-oriented format.")->excludes(cli_proc_format_option);
     cli_proc->add_flag("--mem", opts.mem, "Display virtual memory format.")->excludes(cli_proc_format_option);
+    cli_proc->add_flag("--path", opts.work_path, "specify a dir path as input");
     cli_proc->footer(ssar_cli::PROC_OPTIONS_HELP);
     cli_proc->callback([&](){ 
         if(!cli_proc->get_subcommands().size()){
@@ -4245,6 +4250,7 @@ int main(int argc, char *argv[]){
     cli_load5s->add_flag("--no-headers,-H", opts.noheaders, "Disable the header info.")->excludes(cli_load5s_api_option);
     CLI::Option* cli_load5s_yes_option = cli_load5s->add_flag("--yes,-y", opts.yes, "Just display Y sstate collect datetime.");
     cli_load5s->add_flag("--zoom,-z", opts.zoom, "Just display loadrd detail collect datetime.")->excludes(cli_load5s_yes_option);
+    cli_load5s->add_flag("--path", opts.work_path, "specify a dir path as input");
     cli_load5s->footer(ssar_cli::LOAD5S_OPTIONS_HELP);
     cli_load5s->callback([&](){
         if(!cli_load5s->get_subcommands().size()){
@@ -4265,6 +4271,7 @@ int main(int argc, char *argv[]){
     cli_load2p->add_flag("--stackinfo", opts.stackinfo, "Display stackinfo format.");
     cli_load2p->add_flag("--loadrd", opts.loadrd, "Display loadrd format.");
     cli_load2p->add_flag("--stack", opts.stack, "Display stack format.");
+    cli_load2p->add_flag("--path", opts.work_path, "specify a dir path as input");
     cli_load2p->footer(ssar_cli::LOAD2P_OPTIONS_HELP);
     cli_load2p->callback([&](){
         if(!cli_load2p->get_subcommands().size()){

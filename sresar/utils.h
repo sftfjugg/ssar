@@ -26,6 +26,7 @@ extern message_fn xalloc_err_handler;
 extern void *xxcalloc(unsigned int size) MALLOC;
 extern void *xxmalloc(size_t size) MALLOC;
 extern void *xxrealloc(void *oldp, unsigned int size) MALLOC;
+extern char *strrchr2(register const char *s, int c);
 
 
 #endif

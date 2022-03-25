@@ -177,12 +177,15 @@ char *read_stack_file(unsigned tid, utlbuf_s *ubuf, utlbuf_s *ufbuf, char * nwch
         }
  
         if(!is_nwchan){
-            strncpy(nwchan, cur_line+12, 6);
+            strncpy(nwchan, cur_line + 12, 6);
             is_nwchan = 1;
         }
 
-        cur_line = strchr(cur_line, ']') + 2;
-        if((tmp = strrchr(cur_line, '+')) == 0){
+        if((cur_line = strchr(cur_line, ']')) == NULL){
+            break;
+        }
+        cur_line = cur_line + 2;
+        if((tmp = strrchr2(cur_line + 2, '+')) == NULL){
             break;
         }
         tmp_num = tmp - cur_line;
@@ -239,14 +242,14 @@ char *delete_trailing_chars(char *s, const char *bad) {
 }
 
 int get_process_cmdline(const char* directory, utlbuf_s *ubuf) {
-    int    fd;
-    char  *t = NULL;
-    char   path[100] = {0,};
-    size_t num;
-    size_t total_read = 0;
-    int    ret = 0;
-    int    max_loop_time;
-    int    i = 0;
+    int     fd;
+    char   *t = NULL;
+    char    path[100] = {0,};
+    ssize_t num;
+    size_t  total_read = 0;
+    int     ret = 0;
+    int     max_loop_time;
+    int     i = 0;
 
     max_loop_time = (int)(2097152 / GROWWIDTH);
         
@@ -473,7 +476,7 @@ static void parse_stat(const char* S, proc_t *restrict P){
     P->nlwp      = 0;
 
     S   = strchr(S, '(') + 1;
-    tmp = strrchr(S, ')');
+    tmp = strrchr2(S, ')');
     num = tmp - S;
     if(unlikely(num >= sizeof(P->cmd))) {
         num = sizeof(P->cmd) - 1;
@@ -532,7 +535,7 @@ static void mini_parse_stat(const char* S, cmdinfo_t *restrict P){
     char* tmp;
 
     S   = strchr(S, '(') + 1;
-    tmp = strrchr(S, ')');
+    tmp = strrchr2(S, ')');
     num = tmp - S;
     if(unlikely(num >= sizeof(P->cmd))) {
         num = sizeof(P->cmd) - 1;
@@ -748,7 +751,7 @@ static proc_t* readinfo_task(PROCTAB *restrict const PT, proc_t *restrict const 
     t->nlwp      = 0;
 
     S   = strchr(S, '(') + 1;
-    tmp = strrchr(S, ')');
+    tmp = strrchr2(S, ')');
     num = tmp - S;
     if(unlikely(num >= sizeof(t->cmd))) {
         num = sizeof(t->cmd) - 1;

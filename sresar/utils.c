@@ -181,4 +181,13 @@ int find_char(char **strings, char *value){
     return 0;
 }
 
+char *strrchr2(register const char *s, int c){
+  char *rtnval = 0;
+
+  do {
+    if (*s == c)
+      rtnval = (char*) s;
+  } while (*s++);
+  return (rtnval);
+}
 

@@ -86,7 +86,7 @@
     fputs(full_msg, opts->sresar_stderr);                       \
     fflush(opts->sresar_stderr);                                \
 
-const char *sresar_suffix = "sresar24";
+const char *sresar_suffix = "sresar25";
 const char *cmdline_suffix = "cmdline";
 const char *hour_format = "%Y%m%d%H";
 const char *second_format = "%Y%m%d%H%M%S";
@@ -179,7 +179,7 @@ void print_usage(FILE *stream){
        "  -L          Display all R and D task info.\n"
        "  -S          Random display some D task stack info.\n"
        "\nOutput:\n"
-       "       start_time tgid ppid pgid sid tpgid nlwp state etimes flags sched nice rtprio prio nvcsw nivcsw utime stime size rss maj_flt min_flt cmd cmdline\n"
+       "       start_time tgid ppid pgid sid tpgid nlwp psr state etimes flags sched nice rtprio prio nvcsw nivcsw utime stime size rss maj_flt min_flt cmd cmdline\n"
        "       \n"
 );
 }
@@ -548,7 +548,7 @@ int sresar_live(seq_options *opts){
         return -1;
     }
 
-    printf("start_time tgid ppid pgid sid tpgid nlwp state etimes flags sched nice rtprio prio nvcsw nivcsw utime stime size rss shr maj_flt min_flt cmd cmdline\n");
+    printf("start_time tgid ppid pgid sid tpgid nlwp psr state etimes flags sched nice rtprio prio nvcsw nivcsw utime stime size rss shr maj_flt min_flt cmd cmdline\n");
     int ret;
     while(read_proc(ptp, &pc, 1, &ubuf)){
         the_start_time = the_btime + pc.start_time / Hertz;
@@ -563,8 +563,8 @@ int sresar_live(seq_options *opts){
             (ubuf.buf)[strlen(pc.cmd)+2] = '\0';
         }
 
-        ret = fprintf(stdout, "%llu %d %d %d %d %d %d %c %u %lu %lu %ld %lu %ld %lu %lu %llu %llu %ld %ld %ld %lu %lu %s %s\n", \
-            the_start_time, pc.tgid, pc.ppid, pc.pgid, pc.sid, pc.tpgid, pc.nlwp, pc.state, the_etimes, \
+        ret = fprintf(stdout, "%llu %d %d %d %d %d %d %d %c %u %lu %lu %ld %lu %ld %lu %lu %llu %llu %ld %ld %ld %lu %lu %s %s\n", \
+            the_start_time, pc.tgid, pc.ppid, pc.pgid, pc.sid, pc.tpgid, pc.nlwp, pc.processor, pc.state, the_etimes, \
             pc.flags, pc.sched, pc.nice, pc.rtprio, pc.prio, pc.nvcsw, pc.nivcsw, \
             pc.utime/Hertz, pc.stime/Hertz, pc.size, pc.resident, pc.share, pc.maj_flt, pc.min_flt, pc.cmd, ubuf.buf);
 
@@ -863,8 +863,8 @@ int sresar_daemon(seq_options *opts){
             the_etimes = 0;
         }
 
-        sprintf(proc_info, "%llu %d %d %d %d %d %d %c %u %lu %lu %ld %lu %ld %lu %lu %llu %llu %ld %ld %ld %lu %lu %s\n", \
-            the_start_time, pc.tgid, pc.ppid, pc.pgid, pc.sid, pc.tpgid, pc.nlwp, pc.state, the_etimes, \
+        sprintf(proc_info, "%llu %d %d %d %d %d %d %d %c %u %lu %lu %ld %lu %ld %lu %lu %llu %llu %ld %ld %ld %lu %lu %s\n", \
+            the_start_time, pc.tgid, pc.ppid, pc.pgid, pc.sid, pc.tpgid, pc.nlwp, pc.processor, pc.state, the_etimes, \
             pc.flags, pc.sched, pc.nice, pc.rtprio, pc.prio, pc.nvcsw, pc.nivcsw, \
             pc.utime/Hertz, pc.stime/Hertz, pc.size, pc.resident, pc.share, pc.maj_flt, pc.min_flt, pc.cmd);
         if(opts->proc_gzip_disable){
@@ -1722,6 +1722,8 @@ release101:
 void init_pid_lock(seq_options *opts){
     const char* pid_path = "/run/lock/os_health/";
     struct stat sb;
+    char pid_buf[32];
+
     if(0 == stat(pid_path, &sb)){
         if(!S_ISDIR(sb.st_mode)){
             THREAD_INFO("pid path is not dir.");
@@ -1748,6 +1750,16 @@ void init_pid_lock(seq_options *opts){
             THREAD_ERROR("lock sresar.pid %d failure", lock);
             exit(saved_errno);
         }
+    }
+
+    if(ftruncate(opts->pid_fd, 0) < 0){
+        THREAD_ERROR("ftruncate sresar.pid failure");
+        exit(saved_errno);
+    }
+    snprintf(pid_buf, sizeof(pid_buf), "%d", getpid());
+    if(write(opts->pid_fd, pid_buf, strlen(pid_buf)) == -1){
+        THREAD_ERROR("fail to write pid lock file.");
+        exit(saved_errno);
     }
 }
 
@@ -2114,11 +2126,11 @@ int init_sys_config(seq_options* opts){
             const char* i_cfile = toml_raw_in(j_table, "cfile");
             if(i_cfile){
                 if(toml_rtos(i_cfile, &j_str)){
-                    j_str = strrchr(it_collect.src_path, '/');
+                    j_str = strrchr2(it_collect.src_path, '/');
                     j_str++;
                 }
             }else{
-                j_str = strrchr(it_collect.src_path, '/');
+                j_str = strrchr2(it_collect.src_path, '/');
                 j_str++;
             }
             strcpy(it_collect.cfile, j_str);
