@@ -328,7 +328,7 @@ $ ssar -f +10 -i 1s             # -i 1s表示实时模式情况下，采集输�
 　　有些场景不方便直接部署和安装ssar工具，可以将ssar命令直接分发到相关机器上，此时可以直接在live模式下运行ssar命令：
 
 ```bash
-$ which ssar                    # 获取到ssar命令所处路径/usr/local/bin/ssar，拷贝到目标机
+$ which ssar                    # 获取到ssar命令所处路径/usr/bin/ssar，拷贝到目标机
 $ ./ssar -f +10 -i 1s -o 'metric=d|src_path=/proc/net/snmp|line=8|column=13|alias=retranssegs'  # 在目标机执行
 ```
 
@@ -1348,7 +1348,7 @@ tsar2 -f 20210731                    # 指定结束时间
 
 ## 11.3、数据指标大类选项
 
-　　Tsar的指标大类选项一个11个，除partition选项外，其余10个指标大类tsar2均给予支持，并且保持和tsar的完全兼容。下文详述10个指标大类的详细逻辑，所有相关逻辑也可以通过直接阅读/usr/local/bin/tsar2的python源代码获得。这里用到了一些小节《整机自定义指标说明》语法知识，可以先简单了解下这个小节的内容。
+　　Tsar的指标大类选项一个11个，除partition选项外，其余10个指标大类tsar2均给予支持，并且保持和tsar的完全兼容。下文详述10个指标大类的详细逻辑，所有相关逻辑也可以通过直接阅读/usr/bin/tsar2的python源代码获得。这里用到了一些小节《整机自定义指标说明》语法知识，可以先简单了解下这个小节的内容。
 
 <a name="cpu选项"/>
 

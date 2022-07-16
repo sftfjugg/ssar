@@ -38,13 +38,13 @@ install -d                                  %{buildroot}/usr/src/os_health/ssar/
 install $RPM_BUILD_DIR/conf/sresar.service  %{buildroot}/usr/src/os_health/ssar/
 install $RPM_BUILD_DIR/conf/sresar.cron     %{buildroot}/usr/src/os_health/ssar/
 install $RPM_BUILD_DIR/conf/sresard         %{buildroot}/usr/src/os_health/ssar/
-install -d                                  %{buildroot}/usr/local/lib/os_health/ssar/
-install $RPM_BUILD_DIR/conf/healing.sh      %{buildroot}/usr/local/lib/os_health/ssar/healing.sh
-install -d                                  %{buildroot}/usr/local/bin/
-install $RPM_BUILD_DIR/ssar/ssar            %{buildroot}/usr/local/bin/ssar
-install $RPM_BUILD_DIR/ssar/ssar+.py        %{buildroot}/usr/local/bin/ssar+
-install $RPM_BUILD_DIR/ssar/tsar2.py        %{buildroot}/usr/local/bin/tsar2
-install $RPM_BUILD_DIR/sresar/sresar        %{buildroot}/usr/local/bin/sresar
+install -d                                  %{buildroot}/usr/lib/os_health/ssar/
+install $RPM_BUILD_DIR/conf/healing.sh      %{buildroot}/usr/lib/os_health/ssar/healing.sh
+install -d                                  %{buildroot}/usr/bin/
+install $RPM_BUILD_DIR/ssar/ssar            %{buildroot}/usr/bin/ssar
+install $RPM_BUILD_DIR/ssar/ssar+.py        %{buildroot}/usr/bin/ssar+
+install $RPM_BUILD_DIR/ssar/tsar2.py        %{buildroot}/usr/bin/tsar2
+install $RPM_BUILD_DIR/sresar/sresar        %{buildroot}/usr/bin/sresar
 install -d                                  %{buildroot}/run/lock/os_health/
 touch                                       %{buildroot}/run/lock/os_health/sresar.pid
 
@@ -61,11 +61,11 @@ touch                                       %{buildroot}/run/lock/os_health/sres
 %config %attr(644, root, root) /usr/src/os_health/ssar/sresar.cron
 %config %attr(644, root, root) /usr/src/os_health/ssar/sresard
 %doc    %attr(644, root, root) /usr/share/man/man1/ssar.1.gz
-/usr/local/bin/sresar
-/usr/local/bin/ssar
-/usr/local/bin/ssar+
-/usr/local/bin/tsar2
-/usr/local/lib/os_health/ssar/healing.sh
+/usr/bin/sresar
+/usr/bin/ssar
+/usr/bin/ssar+
+/usr/bin/tsar2
+/usr/lib/os_health/ssar/healing.sh
 /run/lock/os_health/sresar.pid
 
 %pre
@@ -88,7 +88,7 @@ else
     chown root:root /etc/init.d/sresard
     chmod a+x /etc/init.d/sresard
     chkconfig --add sresard 
-    /usr/local/lib/os_health/ssar/healing.sh
+    /usr/lib/os_health/ssar/healing.sh
 fi
 
 %preun
