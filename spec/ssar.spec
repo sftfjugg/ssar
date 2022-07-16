@@ -2,54 +2,62 @@
 %define _ignore_post_scripts_errors %{nil}
 %define _enable_debug_packages %{nil}
 %define debug_package %{nil}
-%define name          ssar
-%define version       1.0.2
 %define release       1
 %define work_path     /var/log
-Name:                 %{name}
-Version:              %{version}
-Release:              %{release}%{?dist}
+
+#
+# spec file for package ssar
+#
+
+Name:                 ssar
+Version:              1.0.3
+Release:              %{?release}%{?dist}
+Url:                  https://gitee.com/anolis/ssar
 Summary:              ssar for SRE
 Group:                System Environment/Base
 License:              Mulan PSL v2
-ExclusiveArch:        x86_64
+Source0:              %{name}-%{version}.tar.gz
+
+BuildRequires:        zlib-devel
+
+Vendor:               Alibaba
+
 %description
 log the system details 
 
 %prep
-install -d                             $RPM_BUILD_DIR/sresar/
-install -d                             $RPM_BUILD_DIR/ssar/
-install -d                             $RPM_BUILD_DIR/conf/
-install -v -D $RPM_SOURCE_DIR/sresar/* $RPM_BUILD_DIR/sresar/
-install -v -D $RPM_SOURCE_DIR/ssar/*   $RPM_BUILD_DIR/ssar/
-install -v -D $RPM_SOURCE_DIR/conf/*   $RPM_BUILD_DIR/conf/
-install -v    $RPM_SOURCE_DIR/Makefile $RPM_BUILD_DIR/Makefile
+%setup -c
 
 %build
 make
 
 %install
-install -d                                  %{buildroot}/etc/ssar/
-install $RPM_BUILD_DIR/conf/ssar.conf       %{buildroot}/etc/ssar/
-install $RPM_BUILD_DIR/conf/sys.conf        %{buildroot}/etc/ssar/
-install -d                                  %{buildroot}/usr/share/man/man1/
-install $RPM_BUILD_DIR/conf/ssar.1.gz       %{buildroot}/usr/share/man/man1/
-install -d                                  %{buildroot}/usr/src/os_health/ssar/
-install $RPM_BUILD_DIR/conf/sresar.service  %{buildroot}/usr/src/os_health/ssar/
-install $RPM_BUILD_DIR/conf/sresar.cron     %{buildroot}/usr/src/os_health/ssar/
-install $RPM_BUILD_DIR/conf/sresard         %{buildroot}/usr/src/os_health/ssar/
-install -d                                  %{buildroot}/usr/lib/os_health/ssar/
-install $RPM_BUILD_DIR/conf/healing.sh      %{buildroot}/usr/lib/os_health/ssar/healing.sh
-install -d                                  %{buildroot}/usr/bin/
-install $RPM_BUILD_DIR/ssar/ssar            %{buildroot}/usr/bin/ssar
-install $RPM_BUILD_DIR/ssar/ssar+.py        %{buildroot}/usr/bin/ssar+
-install $RPM_BUILD_DIR/ssar/tsar2.py        %{buildroot}/usr/bin/tsar2
-install $RPM_BUILD_DIR/sresar/sresar        %{buildroot}/usr/bin/sresar
-install -d                                  %{buildroot}/run/lock/os_health/
-touch                                       %{buildroot}/run/lock/os_health/sresar.pid
+rm -rf $RPM_BUILD_ROOT
+
+BuildDir=$RPM_BUILD_DIR/%{name}-%{version}
+
+install -d                             %{buildroot}/etc/ssar/
+install $BuildDir/conf/ssar.conf       %{buildroot}/etc/ssar/
+install $BuildDir/conf/sys.conf        %{buildroot}/etc/ssar/
+install -d                             %{buildroot}/usr/share/man/man1/
+install $BuildDir/conf/ssar.1.gz       %{buildroot}/usr/share/man/man1/
+install -d                             %{buildroot}/usr/src/os_health/ssar/
+install $BuildDir/conf/sresar.service  %{buildroot}/usr/src/os_health/ssar/
+install $BuildDir/conf/sresar.cron     %{buildroot}/usr/src/os_health/ssar/
+install $BuildDir/conf/sresard         %{buildroot}/usr/src/os_health/ssar/
+install -d                             %{buildroot}/usr/lib/os_health/ssar/
+install $BuildDir/conf/healing.sh      %{buildroot}/usr/lib/os_health/ssar/healing.sh
+install -d                             %{buildroot}/usr/bin/
+install $BuildDir/ssar/ssar            %{buildroot}/usr/bin/ssar
+install $BuildDir/ssar/ssar+.py        %{buildroot}/usr/bin/ssar+
+install $BuildDir/ssar/tsar2.py        %{buildroot}/usr/bin/tsar2
+install $BuildDir/sresar/sresar        %{buildroot}/usr/bin/sresar
+install -d                             %{buildroot}/run/lock/os_health/
+touch                                  %{buildroot}/run/lock/os_health/sresar.pid
 
 %clean
 [ "$RPM_BUILD_ROOT" != "/" ] && rm -rf "$RPM_BUILD_ROOT"
+rm -rf $RPM_BUILD_DIR/%{name}-%{version}
 
 %files
 %defattr(-,root,root,-)
@@ -139,3 +147,6 @@ fi
 %postun
 
 %changelog
+* Wed Jul 13 2022 MilesWen <mileswen@linux.alibaba.com>
+- Release ssar RPM package
+--end
