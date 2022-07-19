@@ -2254,7 +2254,6 @@ void init_env(seq_options *opts){
     int priority = -20;
     if(setpriority(PRIO_PROCESS, 0, priority) == -1){
         printf("setpriority error.\n");
-        exit(1);
     }
 
     if(opts->scatter_second == -1){
