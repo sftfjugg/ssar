@@ -1045,7 +1045,6 @@ void InitEnv(SeqOptions &seq_option){
     bool cross_reboot = false;
     if(-1 == ReadRebootTimes(seq_option.reboot_times)){
         string exception_info = "set utmpx name failed.";
-        throw exception_info;
     }
     stringstream exception_info;
     auto i_element = (*seq_option.reboot_times).cbegin();
