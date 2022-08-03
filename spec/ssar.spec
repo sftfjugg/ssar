@@ -26,7 +26,7 @@ Vendor:               Alibaba
 log the system details 
 
 %prep
-%setup -c
+%autosetup -n %{name}-%{version}
 
 %build
 make
