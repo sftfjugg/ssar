@@ -5,10 +5,6 @@
 %define release       1
 %define work_path     /var/log
 
-#
-# spec file for package ssar
-#
-
 Name:                 ssar
 Version:              1.0.3
 Release:              %{?release}%{?dist}
@@ -147,6 +143,6 @@ fi
 %postun
 
 %changelog
-* Wed Jul 13 2022 MilesWen <mileswen@linux.alibaba.com>
+* Wed Jul 13 2022 MilesWen <mileswen@linux.alibaba.com> - 1.0.3-1
 - Release ssar RPM package
 --end
