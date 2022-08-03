@@ -2,12 +2,12 @@
 %define _ignore_post_scripts_errors %{nil}
 %define _enable_debug_packages %{nil}
 %define debug_package %{nil}
-%define release       1
-%define work_path     /var/log
+%define anolis_release 1
+%define work_path      /var/log
 
 Name:                 ssar
 Version:              1.0.3
-Release:              %{?release}%{?dist}
+Release:              %{?anolis_release}%{?dist}
 Url:                  https://gitee.com/anolis/ssar
 Summary:              ssar for SRE
 Group:                System Environment/Base
