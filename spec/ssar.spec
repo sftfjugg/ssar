@@ -32,24 +32,24 @@ rm -rf $RPM_BUILD_ROOT
 
 BuildDir=$RPM_BUILD_DIR/%{name}-%{version}
 
-install -d                             %{buildroot}/etc/ssar/
-install $BuildDir/conf/ssar.conf       %{buildroot}/etc/ssar/
-install $BuildDir/conf/sys.conf        %{buildroot}/etc/ssar/
-install -d                             %{buildroot}/usr/share/man/man1/
-install $BuildDir/conf/ssar.1.gz       %{buildroot}/usr/share/man/man1/
-install -d                             %{buildroot}/usr/src/os_health/ssar/
-install $BuildDir/conf/sresar.service  %{buildroot}/usr/src/os_health/ssar/
-install $BuildDir/conf/sresar.cron     %{buildroot}/usr/src/os_health/ssar/
-install $BuildDir/conf/sresard         %{buildroot}/usr/src/os_health/ssar/
-install -d                             %{buildroot}/usr/lib/os_health/ssar/
-install $BuildDir/conf/healing.sh      %{buildroot}/usr/lib/os_health/ssar/healing.sh
-install -d                             %{buildroot}/usr/bin/
-install $BuildDir/ssar/ssar            %{buildroot}/usr/bin/ssar
-install $BuildDir/ssar/ssar+.py        %{buildroot}/usr/bin/ssar+
-install $BuildDir/ssar/tsar2.py        %{buildroot}/usr/bin/tsar2
-install $BuildDir/sresar/sresar        %{buildroot}/usr/bin/sresar
-install -d                             %{buildroot}/run/lock/os_health/
-touch                                  %{buildroot}/run/lock/os_health/sresar.pid
+install -d                                %{buildroot}/etc/ssar/
+install -p $BuildDir/conf/ssar.conf       %{buildroot}/etc/ssar/
+install -p $BuildDir/conf/sys.conf        %{buildroot}/etc/ssar/
+install -d                                %{buildroot}/usr/share/man/man1/
+install -p $BuildDir/conf/ssar.1.gz       %{buildroot}/usr/share/man/man1/
+install -d                                %{buildroot}/usr/src/os_health/ssar/
+install -p $BuildDir/conf/sresar.service  %{buildroot}/usr/src/os_health/ssar/
+install -p $BuildDir/conf/sresar.cron     %{buildroot}/usr/src/os_health/ssar/
+install -p $BuildDir/conf/sresard         %{buildroot}/usr/src/os_health/ssar/
+install -d                                %{buildroot}/usr/lib/os_health/ssar/
+install -p $BuildDir/conf/healing.sh      %{buildroot}/usr/lib/os_health/ssar/healing.sh
+install -d                                %{buildroot}/usr/bin/
+install -p $BuildDir/ssar/ssar            %{buildroot}/usr/bin/ssar
+install -p $BuildDir/ssar/ssar+.py        %{buildroot}/usr/bin/ssar+
+install -p $BuildDir/ssar/tsar2.py        %{buildroot}/usr/bin/tsar2
+install -p $BuildDir/sresar/sresar        %{buildroot}/usr/bin/sresar
+install -d                                %{buildroot}/run/lock/os_health/
+touch                                     %{buildroot}/run/lock/os_health/sresar.pid
 
 %clean
 [ "$RPM_BUILD_ROOT" != "/" ] && rm -rf "$RPM_BUILD_ROOT"
@@ -102,8 +102,6 @@ if [ "$1" = "0" ]; then
         systemctl stop    sresar.service
         systemctl disable sresar.service
         rm -f /etc/systemd/system/sresar.service
-        systemctl daemon-reload
-        systemctl reset-failed
     else
         # in docker
         chkconfig --del sresard
