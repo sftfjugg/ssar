@@ -487,7 +487,10 @@ void* rotate_thread(void * args){
                 goto release303;
             }
             opts->sresar_stderr = fdopen(log_fd_new, "a");
-            fclose(sresar_stderr);
+            if (sresar_stderr) {
+                fclose(sresar_stderr);
+                sresar_stderr = NULL;
+            }
             opts->hour_timestamp_lock = get_current_hour_timestamp();
             opts->hour_lock = 0;
 
@@ -620,7 +623,10 @@ int snapsys(seq_options *opts){
             }
             gzflush(target_fp, Z_FLUSH_TYPE);
             gzclose(target_fp);
-            fclose(src_fp);
+            if (src_fp) {
+                fclose(src_fp);
+                src_fp = NULL;
+            }
         }else{
             if((src_fd = open(opts->sys_srcs[i], O_RDONLY|O_NONBLOCK)) == -1){
                 THREAD_ERROR("fail to open src file %s", opts->sys_srcs[i]);
@@ -1322,7 +1328,10 @@ int loadrd(seq_options *opts, utlarr_i *uarr, utlbuf_s *ubuf, utlbuf_s *ufbuf){
     }
     if(SRC_DAEMON == opts->src){
         fflush(loadrd_stdout);
-        fclose(loadrd_stdout);
+        if (loadrd_stdout) {
+            fclose(loadrd_stdout);
+            loadrd_stdout = NULL;
+        }
     }
     mini_closeproc(ptp);
 
@@ -1350,7 +1359,10 @@ int loadrd(seq_options *opts, utlarr_i *uarr, utlbuf_s *ubuf, utlbuf_s *ufbuf){
         }
         if(SRC_DAEMON == opts->src){
             fflush(stack_stdout);
-            fclose(stack_stdout);
+            if (stack_stdout) {
+                fclose(stack_stdout);
+                stack_stdout = NULL;
+            }
         }
     }
 
@@ -2048,7 +2060,10 @@ release1003:
     toml_free(root_conf); 
 release1002:
     root_conf = NULL;
-    fclose(root_fp);
+    if (root_fp) {
+        fclose(root_fp);
+        root_fp = NULL;
+    }
 release1001:
     root_fp = NULL;
 
@@ -2164,8 +2179,10 @@ int init_sys_config(seq_options* opts){
     }
     toml_free(root_conf); 
     root_conf = NULL;
-    fclose(root_fp);
-    root_fp = 0;
+    if (root_fp) {
+        fclose(root_fp);
+        root_fp = NULL;
+    }
 
     for(i = 0; i < COLLECT_SIZE; i++){
         if(*(special_collects[i].src_path) == '\0'){
@@ -2348,7 +2365,10 @@ void init_env(seq_options *opts){
 void release_env(seq_options *opts){
     pid_unlock(opts);
 
-    fclose(opts->sresar_stderr);
+    if (opts->sresar_stderr) {
+        fclose(opts->sresar_stderr);
+        opts->sresar_stderr = NULL;
+    }
     close(opts->load5s_fd);
 }
 
