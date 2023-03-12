@@ -1311,6 +1311,9 @@ int loadrd(seq_options *opts, utlarr_i *uarr, utlbuf_s *ubuf, utlbuf_s *ufbuf){
     }
     while((pc = mini_read_proc(ptp))){
         while(read_task(ptp, &tk, pc)){
+            if(!loadrd_stdout){
+                continue;
+            }
             if(SRC_DAEMON == opts->src){
                 ret = fprintf(loadrd_stdout,"%c %d %d %d %ld %s\n", tk.state, tk.tid, tk.tgid, tk.processor, tk.prio, tk.cmd);
             }else if(SRC_LOADRD == opts->src){
@@ -1355,7 +1358,9 @@ int loadrd(seq_options *opts, utlarr_i *uarr, utlbuf_s *ubuf, utlbuf_s *ufbuf){
         }
         for(j = 0; j < real_size; j++){
             the_stack_info = read_stack_file(uarr->arr[j], ubuf, ufbuf, it_nwchan);
-            fprintf(stack_stdout, "%d %s %s\n", uarr->arr[j], it_nwchan, the_stack_info);
+            if(stack_stdout){
+                fprintf(stack_stdout, "%d %s %s\n", uarr->arr[j], it_nwchan, the_stack_info);
+            }
         }
         if(SRC_DAEMON == opts->src){
             fflush(stack_stdout);
@@ -1452,7 +1457,9 @@ void* loadrd_thread(void * args){
             THREAD_INFO("epoll_wait time out");
             continue;
         }else if(ready_num > 1){
-            fprintf(opts->sresar_stderr, "FUNCTION: %s, INFO: %s, %d\n", __func__, "epoll_wait ready_num is ", ready_num); 
+            if(opts->sresar_stderr){
+                fprintf(opts->sresar_stderr, "FUNCTION: %s, INFO: %s, %d\n", __func__, "epoll_wait ready_num is ", ready_num);
+            }
         }
         for(ready_i = 0; ready_i < ready_num; ready_i++){
             if(ready_events[ready_i].events & EPOLLIN){
@@ -1880,6 +1887,10 @@ int init_basic_config(seq_options* opts){
             i_value = "";
         }
 
+        if(!opts->sresar_stderr){
+            exit(150);
+        }
+
         if(!strcmp(i_key, "work_path")){
             if(toml_rtos(i_value, &i_str)){                    //  definitely lost 
                 fprintf(opts->sresar_stderr, "ERROR: work_path %s is not correct.\n", i_value); 
@@ -1991,6 +2002,10 @@ int init_basic_config(seq_options* opts){
             i_value = "";
         }
 
+        if(!opts->sresar_stderr){
+            exit(150);
+        }
+
         if(!strcmp(i_key, "load1m_threshold")){
             if(toml_rtod(i_value, &(opts->load1m_threshold))){
                 fprintf(opts->sresar_stderr, "load1m_threshold %s is not correct.\n", i_value);
@@ -2045,6 +2060,10 @@ int init_basic_config(seq_options* opts){
         i_value = toml_raw_in(proc_conf, i_key);
         if(!i_value){
             i_value = "";
+        }
+
+        if(!opts->sresar_stderr){
+            exit(150);
         }
 
         if(!strcmp(i_key, "proc_gzip_disable")){
@@ -2239,6 +2258,10 @@ int init_sys_config(seq_options* opts){
             break;
         }
         if(!filter_collects[i].turn){
+            continue;
+        }
+
+        if(!opts->sresar_stderr){
             continue;
         }
 
