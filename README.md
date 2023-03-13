@@ -47,15 +47,13 @@ Method under AnolisOS and centos.
 $ yum install zlib-devel gcc-c++
 $ yum install rpm-build rpmdevtools git
 $ rpmdev-setuptree
-$ cd ~/
+$ cd /tmp/
 $ git clone https://gitee.com/anolis/ssar.git
-$ cd ssar
-$ tar -zcvf ssar-$(cat spec/ssar.spec | grep Version | awk '{print $2}').tar.gz *
-$ cp ssar-$(cat spec/ssar.spec | grep Version | awk '{print $2}').tar.gz ~/rpmbuild/SOURCES/
-$ cp spec/ssar.spec ~/rpmbuild/SPECS/
+$ tar -zcvf ~/rpmbuild/SOURCES/ssar-$(cat ssar/spec/ssar.spec |grep Version |awk '{print $2}').tar.gz ssar
+$ cp ssar/spec/ssar.spec ~/rpmbuild/SPECS/
 $ rpmbuild -bb ~/rpmbuild/SPECS/ssar.spec 
 $ cd ~/rpmbuild/RPMS/x86_64/
-$ sudo rpm -ivh ssar-*.an8.x86_64.rpm
+$ sudo rpm -ivh $(ls)
 $ sudo rpm -e ssar                                             # remove package
 ```
 

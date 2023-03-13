@@ -6,7 +6,7 @@
 %define work_path      /var/log
 
 Name:                 ssar
-Version:              1.0.3
+Version:              1.0.4
 Release:              %{?anolis_release}%{?dist}
 Url:                  https://gitee.com/anolis/ssar
 Summary:              ssar for SRE
@@ -22,9 +22,21 @@ Vendor:               Alibaba
 log the system details 
 
 %prep
-%autosetup -n %{name}-%{version}
+cd $RPM_BUILD_DIR
+rm -rf %{name}-%{version}
+gzip -dc $RPM_SOURCE_DIR/%{name}-%{version}.tar.gz | tar -xvvf -
+if [ $? -ne 0 ]; then
+    exit $?
+fi
+main_dir=$(tar -tzvf $RPM_SOURCE_DIR/%{name}-%{version}.tar.gz| head -n 1 | awk '{print $NF}' | awk -F/ '{print $1}')
+if [ "${main_dir}" == %{name} ];then
+    mv %{name} %{name}-%{version}
+fi
+cd %{name}-%{version}
+chmod -R a+rX,u+w,g-w,o-w .
 
 %build
+cd %{name}-%{version}
 make
 
 %install
@@ -75,6 +87,11 @@ rm -rf $RPM_BUILD_DIR/%{name}-%{version}
 %pre
 
 %post
+/usr/bin/env python --version >/dev/null 2>&1
+if [ $? -ne 0 ];then
+    sed -i 's:/usr/bin/env python:/usr/bin/env python3:' /usr/bin/tsar2
+fi
+
 if [[ $(cat /proc/1/sched | head -n 1 | grep systemd) ]]; then
     # in host
     cp -f /usr/src/os_health/ssar/sresar.service /etc/systemd/system/sresar.service
@@ -143,4 +160,6 @@ fi
 %changelog
 * Wed Jul 13 2022 MilesWen <mileswen@linux.alibaba.com> - 1.0.3-1
 - Release ssar RPM package
+* Mon Mar 13 2023 MilesWen <mileswen@linux.alibaba.com> - 1.0.4-1
+- Fix some segfault.
 --end
