@@ -158,8 +158,8 @@ fi
 %postun
 
 %changelog
-* Wed Jul 13 2022 MilesWen <mileswen@linux.alibaba.com> - 1.0.3-1
-- Release ssar RPM package
 * Mon Mar 13 2023 MilesWen <mileswen@linux.alibaba.com> - 1.0.4-1
 - Fix some segfault.
+* Wed Jul 13 2022 MilesWen <mileswen@linux.alibaba.com> - 1.0.3-1
+- Release ssar RPM package
 --end
